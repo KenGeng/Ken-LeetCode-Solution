@@ -399,3 +399,78 @@ public:
     }
 };
 ```
+
+### 7 [26. Remove Duplicates from Sorted Array](https://leetcode.com/problems/remove-duplicates-from-sorted-array/)
+
+a. 我的
+```c++
+class Solution {
+public:
+    int removeDuplicates(vector<int>& nums) {
+        int len = nums.size();
+        if(len==0) return 0;
+        int cnt = 1;
+        for(int i = 0;i<len;){
+            int l = i;
+           
+            while(l<len&&nums[i] == nums[l]) l++;
+            if (l==len) break;
+            else {
+                cnt++;
+                nums[cnt-1] = nums[l]; 
+            }
+            i = l;
+            
+        }
+        return cnt;
+    }
+};
+```
+
+b. 我简化后的版本
+```c++
+class Solution {
+public:
+    int removeDuplicates(vector<int>& nums) {
+        int len = nums.size();
+        if(len==0) return 0;
+        int cnt = 0;
+        for(int i = 0;i<len;){
+            nums[cnt++] = nums[i];
+           
+            while(i<len&&nums[cnt-1] == nums[i]) i++; //find next different element
+                
+        }
+        return cnt;
+    }
+};
+```
+
+c. [讨论区的漂亮解法](https://leetcode.com/problems/remove-duplicates-from-sorted-array/discuss/11780/5-lines-C%2B%2BJava-nicer-loops)
+```c++
+int removeDuplicates(vector<int>& nums) {
+    int i = !nums.empty();
+    for (int n : nums)
+        if (n > nums[i-1])
+            nums[i++] = n;
+    return i;
+}
+```
+### 8. [27. Remove Element](https://leetcode.com/problems/remove-element/)
+
+我的
+```c++
+class Solution {
+public:
+    int removeElement(vector<int>& nums, int val) {
+    
+        if(nums.size()==0) return 0;
+        int cnt = 0;
+        for(int i = 0 ; i < nums.size();i++){
+            if(nums[i]!=val) nums[cnt++]=nums[i];
+        }
+        
+        return cnt;
+    }
+};
+```
