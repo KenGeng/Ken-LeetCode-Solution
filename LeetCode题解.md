@@ -509,3 +509,87 @@ public:
     }
 };
 ```
+
+### 10. [33. Search in Rotated Sorted Array](https://leetcode.com/problems/search-in-rotated-sorted-array/)
+这个做了差不多两个小时 才想明白 我真的不适合学计算机
+```c++
+class Solution {
+public:
+    int search(vector<int>& nums, int target) {
+        int len = nums.size();
+        if(!len) return -1;
+        
+        int l = 0;
+        int r = len-1;
+        int cur = 0;
+        while(l<=r){
+            cur = (l+r)/2;
+            if(nums[cur] == target) return cur;
+            
+            if(nums[cur] >= nums[l]){//the max element must be in the right part; so the left part is ascending; must be ">="  because as we use floor div in c++, so when length is even, cur is the rightest element in the left part. In this way we can update l and r correctly.
+                if(target>=nums[l]&&target < nums[cur]){
+                    r = cur-1;
+                }else {
+                    l = cur+1;
+                }
+            }else{
+                if(target>nums[cur]&&target <= nums[r]){
+                    l = cur+1;
+                }else {
+                    r = cur-1;
+                }
+            }
+            
+        }
+        
+        return -1;
+    }
+};
+```
+
+### 11.[34. Find First and Last Position of Element in Sorted Array](https://leetcode.com/problems/find-first-and-last-position-of-element-in-sorted-array/)
+
+```c++
+class Solution {
+public:
+    vector<int> searchRange(vector<int>& nums, int target) {
+        int len = nums.size();
+        int l=0 ,r = len-1;
+        vector<int> res;
+        int i0,i1;
+        if(len==0) {
+            res.push_back(-1);
+            res.push_back(-1);
+            return res;
+        }
+        while(l<r){// here is the key
+            i0 = (l+r)/2;
+            
+            if(nums[i0]<target){
+               l=i0+1; 
+            }else r=i0;// here is the key; do not set r=i0-1; at last, if target exists in the array, l would be its leftest index.
+        }
+        if(nums[l]!=target){
+            res.push_back(-1);
+            res.push_back(-1);
+            return res;
+        }
+        res.push_back(l);
+        r = len-1;
+        while(l<r){
+            i1 = (l+r)/2+1;
+           
+            if(nums[i1]>target){
+                r=i1-1;
+            }else l=i1;
+        }
+        
+ 
+        
+        res.push_back(r);
+
+        return res;
+        
+    }
+};
+```
