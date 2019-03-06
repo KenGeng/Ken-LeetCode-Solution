@@ -474,3 +474,38 @@ public:
     }
 };
 ```
+
+### 9. [31. Next Permutation](https://leetcode.com/problems/next-permutation/)
+
+```c++
+//idea: 在当前序列中，从尾端往前寻找两个相邻元素，前一个记为first，后一个记为second，并且满足first 小于 second。然后再从尾端寻找另一个元素number，如果满足first 小于number，即将第first个元素与number元素对调，并将second元素之后（包括second）的所有元素颠倒排序，即求出下一个序列
+
+
+class Solution {
+public:
+    void nextPermutation(vector<int>& nums) {
+        int len = nums.size();
+        if (len <=1 ) return;
+        int i = len - 2;
+        while(i>=0&&nums[i+1]<=nums[i]) i--;
+                
+        if(i>=0){
+            int j = len-1;
+            while(j>=0&&nums[j]<=nums[i]) j--;
+            int temp = nums[i];
+            nums[i] = nums[j];
+            nums[j] = temp;
+        }
+        
+        //reverse
+        for(int k = i+1 ; k < (len+i+1)/2; k++){
+            
+            int t = nums[k];
+            nums[k] = nums[len-k+i];
+            nums[len-k+i] = t;
+            
+        }
+        
+    }
+};
+```
