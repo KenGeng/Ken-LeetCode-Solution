@@ -593,3 +593,386 @@ public:
     }
 };
 ```
+
+### 12.[35. Search Insert Position](https://leetcode.com/problems/search-insert-position/)
+```c++
+class Solution {
+public:
+    int searchInsert(vector<int>& nums, int target) {
+        int len  = nums.size();
+        int l= 0,r=len-1;
+        int mid = 0;
+        while(l<r){
+            mid = (l+r)/2;
+            if(nums[mid] < target){
+                l = mid+1;
+            }else  r=mid;
+        }
+        if(nums[l]<target) return l+1;
+        else return l;
+    }
+};
+```
+### 13.[39. Combination Sum](https://leetcode.com/problems/combination-sum/)
+
+```c++
+class Solution {
+public:
+    
+    void util(vector<int>& candidates, int target,vector<int>& cur_res, vector<vector<int>>& results){
+        if(target==0) results.push_back(cur_res);
+        else if(target < 0) return;
+        else{
+            for(int i =0 ; i < candidates.size();i++){
+                if(cur_res.size()==0||cur_res[cur_res.size()-1]<=candidates[i]){//shortcut calculation
+                    cur_res.push_back(candidates[i]);
+                    util(candidates,target-candidates[i],cur_res,results);
+                    cur_res.pop_back();
+                }
+                
+                
+            }
+        }
+        
+    }
+    vector<vector<int>> combinationSum(vector<int>& candidates, int target) {
+        vector<vector<int>> results;
+        vector<int> cur_res;
+        util(candidates,target,cur_res,results);
+        return results;
+    }
+};
+```
+
+a prune version
+```c++
+class Solution {
+public:
+    
+    void util(vector<int>& candidates, int target,vector<int>& cur_res, vector<vector<int>>& results){
+        if(target==0) results.push_back(cur_res);
+        else if(target < 0) return;
+        else{
+            for(int i =0 ; i < candidates.size()&& target >= candidates[i];i++){//prune
+                if(cur_res.size()==0||cur_res[cur_res.size()-1]<=candidates[i]){//shortcut calculation
+                    cur_res.push_back(candidates[i]);
+                    util(candidates,target-candidates[i],cur_res,results);
+                    cur_res.pop_back();
+                }
+                
+                
+            }
+        }
+        
+    }
+    vector<vector<int>> combinationSum(vector<int>& candidates, int target) {
+        sort(candidates.begin(),candidates.end());//sort for pruning
+        vector<vector<int>> results;
+        vector<int> cur_res;
+        util(candidates,target,cur_res,results);
+        return results;
+    }
+};
+```
+
+### 14.[40. Combination Sum II](https://leetcode.com/problems/combination-sum-ii/)
+
+```c++
+class Solution {
+public:
+        void util(vector<int>& candidates,int begin, int target,vector<int>& cur_res, vector<vector<int>>& results){
+        if(target==0) results.push_back(cur_res);
+        else if(target < 0) return;
+        else{
+            for(int i = begin ; i < candidates.size();i++){
+                if(cur_res.size()==0||cur_res[cur_res.size()-1]<=candidates[i]){
+                    cur_res.push_back(candidates[i]);
+               
+                    util(candidates,i+1,target-candidates[i],cur_res,results);
+                    cur_res.pop_back();
+            
+                
+                    while(i<candidates.size()-1&&candidates[i]==candidates[i+1]) i++;//skip the same element
+                    
+                }   
+            }
+        }
+        
+    }
+    vector<vector<int>> combinationSum2(vector<int>& candidates, int target) {
+        vector<vector<int>> results;
+        vector<int> cur_res;
+        int begin =0;
+        sort(candidates.begin(),candidates.end());
+        util(candidates,0,target,cur_res,results);
+        return results;
+    }
+};
+```
+
+### 15. [41. First Missing Positive](https://leetcode.com/problems/first-missing-positive/)
+
+我的解法:
+```c++
+class Solution {
+public:
+    int firstMissingPositive(vector<int>& nums) {
+        vector<int> bucket;
+        sort(nums.begin(),nums.end());
+        for(int i =0;i<nums.size();i++){
+            if(nums[i]>0) {
+                if(bucket.size()>0) {
+                    if(nums[i]>bucket[bucket.size()-1]) bucket.push_back(nums[i]);
+                }else bucket.push_back(nums[i]);
+            }
+        }
+
+        int len=bucket.size();
+        if(len==0) return 1;
+        int res = 1;
+        for(int i =0;i<len;i++){
+            if(bucket[i]<=res) res++;
+            if(i<len-1&&bucket[i]<bucket[i+1]-1) {
+                return res<bucket[i]+1?res:bucket[i]+1;
+            }
+        }
+
+        return res;
+    }
+};
+```
+
+评论区的漂亮解法:
+```c++
+class Solution
+{
+public:
+    int firstMissingPositive(int A[], int n)
+    {
+        for(int i = 0; i < n; ++ i)
+            while(A[i] > 0 && A[i] <= n && A[A[i] - 1] != A[i])
+                swap(A[i], A[A[i] - 1]);
+        
+        for(int i = 0; i < n; ++ i)
+            if(A[i] != i + 1)
+                return i + 1;
+        
+        return n + 1;
+    }
+};
+```
+
+###  16. [42. Trapping Rain Water](https://leetcode.com/problems/trapping-rain-water/)
+我的暴力解法(一行一行地数格子):
+```c++
+class Solution {
+public:
+    int trap(vector<int>& height) {
+        int max= 0;
+        int len = height.size();
+        for(int i=0;i<len;i++){
+            if(height[i]>max) max=height[i];
+        }
+        int res=0;
+        for(int i=1;i<=max;i++){
+            int l=len-1,r=0;
+            for(int j=0;j<len;j++){
+                if(height[j]>=i) {
+                    l=j;
+                    break;
+                }
+            }
+            for(int j=len-1;j>=0;j--){
+                if(height[j]>=i) {
+                    r=j;
+                    break;
+                }
+            }
+            for(int j=l;j<=r;j++){
+                if(height[j]<i) res++;
+            }
+        }
+        return res;
+    }
+};
+```
+评论区的漂亮解法
+左右摇摆数格子 一列一列的数
+```c++
+class Solution {
+public:
+    int trap(int A[], int n) {
+        int left=0; int right=n-1;
+        int res=0;
+        int maxleft=0, maxright=0;
+        while(left<=right){
+            if(A[left]<=A[right]){
+                if(A[left]>=maxleft) maxleft=A[left];
+                else res+=maxleft-A[left];
+                left++;
+            }
+            else{
+                if(A[right]>=maxright) maxright= A[right];
+                else res+=maxright-A[right];
+                right--;
+            }
+        }
+        return res;
+    }
+};
+```
+
+### 17. [45. Jump Game II](https://leetcode.com/problems/jump-game-ii/)
+
+我的超时的递归解法
+```c++
+class Solution {
+public:
+    int jump(vector<int>& nums) {
+        vector<int> res;
+        int cur=0,cnt=0;
+        if(nums.size()==1) return 0;
+        util( nums,res,cur,cnt);
+        int min = 1000000;
+        for(int i=0;i<res.size();i++ ){
+      
+            if(min>res[i]) min=res[i];
+        }
+        return min;
+    }
+         
+    void util(vector<int>& nums, vector<int>& res,int cur,int cnt){
+        if(cur+nums[cur]>=nums.size()-1) res.push_back(cnt+1);
+        else if(cur!=nums.size()-1&&nums[cur]==0||(res.size()>0&&cnt>=res[res.size()-1])) return;
+        else{
+            for(int i = nums[cur];i>=1;i--){
+                cnt++;
+                cur+=i;
+                util( nums,res,cur,cnt);
+                cur-=i;
+                cnt--;
+            }
+        }
+    }
+    
+};
+```
+
+[科学的用BFS思想的解法-可达节点放在一层](https://leetcode.com/problems/jump-game-ii/discuss/18207/Sharing-my-straightforward-C%2B%2B-solution)
+
+```c++
+class Solution {
+public:
+    int jump(vector<int>& nums) {
+        int len = nums.size();
+        int cur=0,cnt=0;
+        if(nums.size()<2) return 0;
+        
+        int level=0,currentMax=0,i=0,nextMax=0;
+
+         while(currentMax-i+1>0){		//nodes count of current level>0
+             level++;
+             for(;i<=currentMax;i++){	//traverse current level , and update the max reach of next level
+                nextMax=nextMax>nums[i]+i?nextMax:nums[i]+i;
+                if(nextMax>=len-1) return level;   // if last element is in level+1,  then the min jump=level 
+             }
+             currentMax=nextMax;
+         }
+        return 0;
+    }
+         
+
+};
+```
+
+### 18.[48. Rotate Image](https://leetcode.com/problems/rotate-image/)
+```c++
+class Solution {
+public:
+    // void rotate(vector<vector<int>>& matrix) {
+    //      reverse(matrix.begin(), matrix.end());
+    // for (int i = 0; i < matrix.size(); ++i) {
+    //     for (int j = i + 1; j < matrix[i].size(); ++j)
+    //         swap(matrix[i][j], matrix[j][i]);
+    // }
+    // }
+     
+//      void rotate(vector<vector<int>>& m) {
+//         int n = m.size();
+        
+//         for(int i=0; i<n; i++)
+//             for(int j=0; j<i; j++)
+//                 swap(m[i][j], m[j][i]);
+        
+//         for(int i=0; i<n; i++)
+//             reverse(m[i].begin(), m[i].end());
+//     }
+    void rotate(vector<vector<int>>& matrix) {
+        int n =  matrix.size();
+         for (int i=0; i<n/2; ++i)
+    {
+        for (int j=i; j<n-1-i; ++j)
+        {
+            int z = matrix[i][j];
+            matrix[i][j] = matrix[n-j-1][i];
+            matrix[n-j-1][i] = matrix[n-i-1][n-j-1];
+            matrix[n-i-1][n-j-1] = matrix[j][n-i-1];
+            matrix[j][n-i-1] = z;
+        }
+    }
+    }
+};
+```
+
+评论区大佬:
+here give a common method to solve the image rotation problems.
+```c++
+/*
+ * clockwise rotate
+ * first reverse up to down, then swap the symmetry 
+ * 1 2 3     7 8 9     7 4 1
+ * 4 5 6  => 4 5 6  => 8 5 2
+ * 7 8 9     1 2 3     9 6 3
+*/
+void rotate(vector<vector<int> > &matrix) {
+    reverse(matrix.begin(), matrix.end());
+    for (int i = 0; i < matrix.size(); ++i) {
+        for (int j = i + 1; j < matrix[i].size(); ++j)
+            swap(matrix[i][j], matrix[j][i]);
+    }
+}
+
+/*
+ * anticlockwise rotate
+ * first reverse left to right, then swap the symmetry
+ * 1 2 3     3 2 1     3 6 9
+ * 4 5 6  => 6 5 4  => 2 5 8
+ * 7 8 9     9 8 7     1 4 7
+*/
+void anti_rotate(vector<vector<int> > &matrix) {
+    for (auto vi : matrix) reverse(vi.begin(), vi.end());
+    for (int i = 0; i < matrix.size(); ++i) {
+        for (int j = i + 1; j < matrix[i].size(); ++j)
+            swap(matrix[i][j], matrix[j][i]);
+    }
+}
+```
+
+### 19.[53. Maximum Subarray](https://leetcode.com/problems/maximum-subarray/)
+
+```c++
+class Solution {
+public:
+    int maxSubArray(vector<int>& nums) {
+        int res=nums[0];
+        int sum =0;
+        for(int i = 0;i<nums.size();i++){
+            sum += nums[i];
+            res = max(res,sum);
+            sum = max(sum,0);
+            
+        }
+        return res;
+    }
+};
+```
