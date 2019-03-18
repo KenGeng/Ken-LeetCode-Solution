@@ -959,7 +959,7 @@ void anti_rotate(vector<vector<int> > &matrix) {
 ```
 
 ### 19.[53. Maximum Subarray](https://leetcode.com/problems/maximum-subarray/)
-
+#### 一个简洁的online:
 ```c++
 class Solution {
 public:
@@ -976,3 +976,65 @@ public:
     }
 };
 ```
+#### 一个分治算法(待补充)
+
+
+### 20.[54. Spiral Matrix](https://leetcode.com/problems/spiral-matrix/)
+#### 绕圈遍历
+做了好久没做出来 对顺时针理解得不到位....
+```c++
+class Solution {
+public:
+    vector<int> spiralOrder(vector<vector<int>>& matrix) {
+        vector<int> res;
+        int m = matrix.size();
+        if(m==0) return res;
+        int n = matrix[0].size();
+        
+        int l = 0, r = n-1;//left right
+        int t = 0, b = m-1;//top bottom
+        while(l<=r&&t<=b){
+            for(int i = l; i<=r;i++) res.push_back(matrix[t][i]);
+            
+            for(int i = t+1;i<=b;i++) res.push_back(matrix[i][r]);
+            if(l<r&&t<b){
+                for(int i = r-1;i>l;i--) res.push_back(matrix[b][i]);
+                for(int i = b; i> t;i--) res.push_back(matrix[i][l]);
+            }
+            l++;
+            r--;
+            t++;
+            b--;
+        }
+     
+        return res;
+    }
+};
+```
+#### 评论区里一个很好看的解法
+```c++
+class Solution {
+public:
+    vector<int> spiralOrder(vector<vector<int>>& matrix) {
+        if (matrix.empty()) return {};
+        int m = matrix.size(), n = matrix[0].size();
+        vector<int> spiral(m * n);
+        int u = 0, d = m - 1, l = 0, r = n - 1, k = 0;
+        while (true) {
+            // up
+            for (int col = l; col <= r; col++) spiral[k++] = matrix[u][col];
+            if (++u > d) break;
+            // right
+            for (int row = u; row <= d; row++) spiral[k++] = matrix[row][r];
+            if (--r < l) break;
+            // down
+            for (int col = r; col >= l; col--) spiral[k++] = matrix[d][col];
+            if (--d < u) break;
+            // left
+            for (int row = d; row >= u; row--) spiral[k++] = matrix[row][l];
+            if (++l > r) break;
+        }
+        return spiral;
+    }
+};
+``` 
