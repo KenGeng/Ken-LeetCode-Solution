@@ -1037,4 +1037,245 @@ public:
         return spiral;
     }
 };
-``` 
+```
+
+###21. [55.Jump Game - LeetCode](https://leetcode.com/problems/jump-game/)
+我的解法(DP by myself)
+```c++
+class Solution {
+public:
+    bool canJump(vector<int>& nums) {
+
+        int len = nums.size();
+        if(!len) return false;
+        
+        vector<int> judge(len,0);
+        judge[len-1]=1;
+        
+        for(int i = len-1;i>=0;i--){
+            for(int j=i;j<=i+nums[i]&&j<len;j++){
+            
+                if(judge[j]==1) {
+                    judge[i]=1;
+                    break;
+                }
+            
+            }
+        }
+        return judge[0]==1; 
+
+           
+    }
+};
+```
+elegant greedy code from comments:
+```c++
+bool canJump(int A[], int n) {
+    int i = 0;
+    for (int reach = 0; i < n && i <= reach; ++i)
+        reach = max(i + A[i], reach);
+    return i == n;
+}
+```
+
+### 21. [56.Merge Intervals - LeetCode](https://leetcode.com/problems/merge-intervals/)
+
+```c++
+/**
+ * Definition for an interval.
+ * struct Interval {
+ *     int start;
+ *     int end;
+ *     Interval() : start(0), end(0) {}
+ *     Interval(int s, int e) : start(s), end(e) {}
+ * };
+ */
+class Solution {
+public:
+    
+    static bool compare(const Interval &odd1,const Interval &odd2)
+    {
+        return odd1.start<odd2.start;
+    }
+    vector<Interval> merge(vector<Interval>& intervals) {
+        int len = intervals.size();
+        vector<Interval> res;
+        if(len == 1 || len ==0 ) return intervals;
+        //sort according to the 'start' , so we only need to consider 3 situations: 
+        //a. [1,2],[2,3] 
+        //b. [1,3],[2,3]
+        //c. [1,2],[4,5]
+        sort(intervals.begin(),intervals.end(),compare);
+        Interval temp = intervals[0];
+        for(int i = 1 ; i < len; i++){
+            
+            if(temp.end >= intervals[i].start && temp.end < intervals[i].end){//situation a 
+                temp = Interval(temp.start, intervals[i].end);
+            }else if(temp.end >= intervals[i].end ){//situation b
+                temp = Interval(temp.start, temp.end);
+            }else{//situation c
+                res.push_back(temp);
+                temp = intervals[i];
+            }
+        }
+        //add the last one
+        res.push_back(temp);
+        return res;
+    }
+};
+```
+
+评论区利用 按start已经排序好的性质 提出的O(N)解法:
+```c++
+class Solution {
+public:
+    vector<Interval> insert(vector<Interval>& intervals, Interval newInterval) {
+        vector<Interval> res;
+        int index = 0;
+        while(index < intervals.size() && intervals[index].end < newInterval.start){
+            res.push_back(intervals[index++]);
+        }
+        while(index < intervals.size() && intervals[index].start <= newInterval.end){
+            newInterval.start = min(newInterval.start, intervals[index].start);
+            newInterval.end = max(newInterval.end, intervals[index].end);
+            index++;
+        }
+        res.push_back(newInterval);
+        while(index < intervals.size()){
+            res.push_back(intervals[index++]);
+        }
+        return res;
+    }
+};
+```
+
+### 22. [59.Spiral Matrix II - LeetCode](https://leetcode.com/problems/spiral-matrix-ii/)
+
+c++绕圈圈
+```c++
+class Solution {
+public:
+    vector<vector<int>> generateMatrix(int n) {
+        vector<vector<int>> res(n, vector<int>(n,0));
+        
+        if(!n) return res;
+        
+        int r0=0,r1=n-1;
+        int c0=0,c1=n-1;
+        int num=1;
+        while(r0<=r1 && c0<=c1 ){
+            
+            if(r0==r1) {
+                res[r0][c0]=num;
+                break;
+            }
+            for(int i = c0;i < c1;i++){
+                res[r0][i] = num++;
+            }
+            // r0++;
+            for(int i = r0; i< r1;i++){
+                res[i][c1] = num++;
+            }
+            
+            for(int i = c1; i> c0; i--){
+                res[r1][i] = num++;
+            }
+            
+            for(int i = r1; i > r0; i--){
+                res[i][c0] = num++;
+            }
+            c0++;
+            c1--;
+            r0++;
+            r1--;
+        }
+        
+        return res;
+    }
+};
+```
+
+评论区的更漂亮一点的解法:
+```c++
+public class Solution {
+    public int[][] generateMatrix(int n) {
+        // Declaration
+        int[][] matrix = new int[n][n];
+        
+        // Edge Case
+        if (n == 0) {
+            return matrix;
+        }
+        
+        // Normal Case
+        int rowStart = 0;
+        int rowEnd = n-1;
+        int colStart = 0;
+        int colEnd = n-1;
+        int num = 1; //change
+        
+        while (rowStart <= rowEnd && colStart <= colEnd) {
+            for (int i = colStart; i <= colEnd; i ++) {
+                matrix[rowStart][i] = num ++; //change
+            }
+            rowStart ++;
+            
+            for (int i = rowStart; i <= rowEnd; i ++) {
+                matrix[i][colEnd] = num ++; //change
+            }
+            colEnd --;
+            
+            for (int i = colEnd; i >= colStart; i --) {
+                if (rowStart <= rowEnd)
+                    matrix[rowEnd][i] = num ++; //change
+            }
+            rowEnd --;
+            
+            for (int i = rowEnd; i >= rowStart; i --) {
+                if (colStart <= colEnd)
+                    matrix[i][colStart] = num ++; //change
+            }
+            colStart ++;
+        }
+        
+        return matrix;
+    }
+}
+```
+
+### 23. [62.Unique Paths - LeetCode](https://leetcode.com/problems/unique-paths/)
+
+```c++
+class Solution {
+public:
+    int uniquePaths(int m, int n) {
+        //C(m+1,n)
+        double num,deno;
+        num=1;
+        deno=1;
+        n--;
+        m--;
+        double temp = max(m,n);
+        
+        for(int i = m+n;i>temp;i--) num*=i;
+        if(temp == m) for(int i = 1;i<=n; i++) deno*=i;
+        else for(int i = 1;i<=m; i++) deno*=i;
+        return num/deno;
+    }
+};
+```
+评论区的漂亮DP:
+```c++
+class Solution {
+public:
+    int uniquePaths(int m, int n) {
+        vector<vector<int>> dp(m, vector<int>(n, 1));
+        for (int i = 1; i < m; i++) {
+            for (int j = 1; j < n; j++) {
+                dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+            }
+        }
+        return dp[m - 1][n - 1];
+    }
+};
+```
