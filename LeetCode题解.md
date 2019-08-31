@@ -1279,3 +1279,229 @@ public:
     }
 };
 ```
+
+### 24. [63.Unique Paths II - LeetCode](https://leetcode.com/problems/unique-paths-ii/)
+
+```c++
+class Solution {
+public:
+    int uniquePathsWithObstacles(vector<vector<int>>& obstacleGrid) {
+        
+        int r = obstacleGrid.size();
+        int c = obstacleGrid[0].size();
+        // use long long for int overflow
+        vector<vector<long long>> obstacleGrid_long(r,vector<long long>(c,0));
+        for(int i =0;i<r;i++) for (int j=0;j<c;j++) obstacleGrid_long[i][j] = obstacleGrid[i][j];
+        
+        if(obstacleGrid_long[0][0]==1) return 0;
+        else obstacleGrid_long[0][0]=1;
+        //first col
+        for (int i =1;i<r;i++) {
+            if (obstacleGrid_long[i-1][0]==1&&obstacleGrid_long[i][0]!=1){
+                obstacleGrid_long[i][0] = 1;
+            }else obstacleGrid_long[i][0] = 0;
+            
+        }
+        // first row
+        for (int i =1;i<c;i++) {
+            if (obstacleGrid_long[0][i-1]==1&&obstacleGrid_long[0][i]!=1){
+                obstacleGrid_long[0][i] = 1;
+            }else obstacleGrid_long[0][i] = 0;
+            
+        }
+        
+        for(int i =1;i<r;i++){
+            for(int j = 1;j<c;j++){
+                if(obstacleGrid_long[i][j]==1) {
+                    obstacleGrid_long[i][j] = 0;
+                    // continue;
+                }       
+                else {
+                    obstacleGrid_long[i][j] = obstacleGrid_long[i-1][j] + obstacleGrid_long[i][j-1];
+                }
+
+            
+            }
+        }
+        return obstacleGrid_long[r-1][c-1];
+        
+        //good solution from comments
+        // int m = obstacleGrid.size() , n = obstacleGrid[0].size();
+        // vector<vector<long long>> dp(m+1,vector<long long>(n+1,0));
+        // dp[0][1] = 1;
+        // for(int i = 1 ; i <= m ; ++i)
+        //     for(int j = 1 ; j <= n ; ++j)
+        //         if(!obstacleGrid[i-1][j-1])
+        //             dp[i][j] = dp[i-1][j]+dp[i][j-1];
+        // return dp[m][n];
+    }
+};
+```
+
+### 25.[66.Plus One - LeetCode](https://leetcode.com/problems/plus-one/)
+```c++
+class Solution {
+public:
+    vector<int> plusOne(vector<int>& digits) {
+        int l = digits.size();
+        for(int i = l-1;i>=0;i--) {
+            digits[i]+=1;
+            if(digits[i]==10) {
+                digits[i]=0;
+                if(i==0) digits.insert(digits.begin(), 1); 
+                continue;
+            }else break;
+            
+        
+        }
+        return digits;
+    }
+};
+```
+### [Reverse Integer - LeetCode](https://leetcode.com/problems/reverse-integer/)
+
+没什么意思的题;刚开始很快用double存储做了出来,尝试只用INT 但判定overflow出了问题 没想到再加一层&&判断 whatever 控制时间 保持冷静 做好总结 不要自毁 不要浪费时间 一题20分钟以内 you can do it.
+```c++
+#include<cmath>
+class Solution {
+public:
+    int reverse(int x) {
+        int res=0;
+
+        while(x!=0){
+            
+            if(res>INT_MAX/10||(res==INT_MAX&&x%10>7)) return 0;
+            if(res<INT_MIN/10||(res==INT_MIN&&x%10<-8)) return 0;
+            res=res*10+x%10;
+            
+            x/=10;
+        }
+        return res;
+          
+    }
+};
+```
+## Top 100 Liked Question
+### [Linked List Cycle - LeetCode](https://leetcode.com/problems/linked-list-cycle/solution/)
+很有趣的一题, 用两个指针,以不同的速度后移,如果能追上说明有环, 就是题意理解不了…            只要二者速度差为1 肯定就能追上 为了变成方便让速度为2和1 
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    bool hasCycle(ListNode *head) {
+        ListNode* slow;
+        ListNode* fast;
+        if(head==nullptr||head->next==nullptr) return false; 
+        slow=head;
+        fast=head->next;
+        if(slow==fast) return true;
+        while(slow!=fast&&slow->next!=nullptr&&fast->next!=nullptr&&fast->next->next!=nullptr){
+            
+            slow=slow->next;
+            fast=fast->next->next;
+            if(slow==fast) return true;
+            
+        }
+        return false;
+    }
+};
+```
+
+优化一下的代码:
+
+```c++
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    bool hasCycle(ListNode *head) {
+        ListNode* slow;
+        ListNode* fast;
+        if(head==nullptr||head->next==nullptr) return false; 
+        slow=head;
+        fast=head->next;
+        
+        while(slow!=fast){
+            if(fast==nullptr||fast->next==nullptr) {
+                return false;
+            }
+            slow=slow->next;
+            fast=fast->next->next;
+        }
+        return true;
+    }
+};
+```
+
+### [Minimum Path Sum - LeetCode](https://leetcode.com/problems/minimum-path-sum/)
+standard DP. 
+```c++
+class Solution {
+public:
+    int minPathSum(vector<vector<int>>& grid) {
+        int m = grid.size();
+        int n = grid[0].size();
+
+        if(m==n&&m==1) return grid[0][0];
+        for(int i =1;i<n;i++) grid[0][i]+=grid[0][i-1];//initial first row
+        for(int i =1;i<m;i++) grid[i][0]+=grid[i-1][0];//initial first col
+        for(int i=1;i<m;i++){
+            for(int j =1;j<n;j++){
+                grid[i][j]+=grid[i-1][j]<grid[i][j-1]?grid[i-1][j]:grid[i][j-1];
+            }
+        }
+        
+        return grid[m-1][n-1];
+    }
+};
+```
+
+### [Basic Calculator - LeetCode](https://leetcode.com/problems/basic-calculator/)
+没做出来 卡了好久 非常自闭 和以前写过的中缀计算器记混了 哎
+```c++
+class Solution {
+public:
+    int calculate(string s) {
+        stack <int> nums, ops;
+        int num = 0;
+        int rst = 0;
+        int sign = 1;
+        for (char c : s) { 
+            if (isdigit(c)) {
+                num = num * 10 + (c - '0');//获得operand
+            }
+            else {
+                rst += sign * num;//全是加法 减法=加负数；最开始有个0+
+                num = 0;
+                if (c == '+') sign = 1;
+                if (c == '-') sign = -1;
+                if (c == '(') {
+                    nums.push(rst);//当前结果入栈
+                    ops.push(sign);//括号前的操作符入栈
+                    rst = 0;
+                    sign = 1;
+                }
+                if (c == ')' ) {
+                    rst = ops.top() * rst + nums.top();//括号内结果+当前结果
+                    ops.pop(); nums.pop();
+                }
+            }
+        }
+        rst += sign * num;
+        return rst;
+    }
+};
+```
