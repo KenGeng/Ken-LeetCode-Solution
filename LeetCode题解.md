@@ -1505,3 +1505,36 @@ public:
     }
 };
 ```
+### [Word Break - LeetCode](https://leetcode.com/problems/word-break/)
+```c++
+class Solution {
+public:
+    bool wordBreak(string s, vector<string>& wordDict) {
+        if(wordDict.size()==0) return false;
+
+        vector<bool> dp(s.size()+1,false);
+        dp[0] = true;
+        
+        for(int i =1;i<=s.size();i++){
+            for(int j = i-1;j>=0;j--){
+                if(dp[j]){
+                   string word = s.substr(j,i-j);
+                    if(std::find(wordDict.begin(),wordDict.end(),word)!=wordDict.end()){                 
+                                dp[i] = true;
+                                break;
+                        } 
+                    }
+                
+            }
+        }
+        return dp[s.size()];
+        
+    }
+};
+```
+DP, 找前缀的匹配, 然后应该必须O(n^2)?
+two cases:
+s = "catsdog", wordDict = ["cats", "dog", "cat"]
+s = "catsister", wordDict = ["cats","sister", "cat"]
+If there is an O(n) solution, then we can only traverse the s for a one time. If we traverse from front to end, we can not decide which word to match(cat or cats).
+If we traverse from end to front, similar cases can be built.
