@@ -1,4 +1,5 @@
 # LeetCode-Solution-C
+
 LeetCode Solution in C++
 
 # LeetCode题解
@@ -886,6 +887,7 @@ public:
 ```
 
 ### 18.[48. Rotate Image](https://leetcode.com/problems/rotate-image/)
+
 ```c++
 class Solution {
 public:
@@ -1538,3 +1540,639 @@ s = "catsdog", wordDict = ["cats", "dog", "cat"]
 s = "catsister", wordDict = ["cats","sister", "cat"]
 If there is an O(n) solution, then we can only traverse the s for a one time. If we traverse from front to end, we can not decide which word to match(cat or cats).
 If we traverse from end to front, similar cases can be built.
+
+### [Can Make Palindrome from Substring - LeetCode](https://leetcode.com/problems/can-make-palindrome-from-substring/)
+需要统计出一个子串有多少个字母落单，这个不做优化的话，统计就是 O(m)的复杂度。
+再加上 n 个子串询问，综合复杂度就是 O(n*m)了。
+
+所以这里需要对统计进行优化，比如预先统计好所有前缀子串。
+当需要查询某个子串时，两个前缀子串的统计结果相减，就得到当前子串的统计。
+(学到了)
+```c++
+class Solution {
+    vector<map<char, int>> base;
+    void born(string&s){
+        map<char,int> m;
+        base.push_back(m);
+        for(auto c: s){
+            m[c]++;
+            base.push_back(m);
+        }
+    }
+    
+    int getRange(int l, int r){
+        int ans = 0;
+        map<char, int> tmp = base[r+1];
+        for(auto&p : base[l]){
+            tmp[p.first] -= p.second;
+        }
+        for(auto&p: tmp){
+            if(p.second %2 == 1)ans++;
+        }
+        return ans;
+    }
+public:
+    vector<bool> canMakePaliQueries(string& s, vector<vector<int>>& queries) {
+        born(s);
+        vector<bool>ans;
+        
+        for(auto& q: queries){
+            int num = getRange(q[0], q[1]);
+            if(num/2 <= q[2]){
+                ans.push_back(true);
+            }else{
+                ans.push_back(false);
+            }
+        }
+        
+        return ans;
+    }
+};
+```
+
+### [Prime Arrangements - LeetCode](https://leetcode.com/problems/prime-arrangements)
+整除的不变性?
+```c++
+class Solution {
+public:
+    bool isPrime(int n){
+        if (n==1) return false;
+        if (n==2) return true;
+        for(int i =2;i<=sqrt(n);i++){
+            if(n%i==0) return false;
+        }
+        return true;
+    }
+    int numPrimeArrangements(int n) {
+        int count = 0;
+        for(int i = 1;i <= n; i++){
+            if(isPrime(i)) count++;
+        }
+        long long int res = 1;
+        for(int i = 1; i <= count; i++){
+            res *= i;
+            res=res%(1000000000 + 7);
+        }
+        for(int i = 1; i <= n-count; i++){
+            res *= i;
+            res=res%(1000000000 + 7);
+            
+        }
+        return res;
+        
+    }
+};
+```
+### [Diet Plan Performance - LeetCode](https://leetcode.com/problems/diet-plan-performance/)
+```c++
+class Solution {
+public:
+    int dietPlanPerformance(vector<int>& calories, int k, int lower, int upper) {
+        int res = 0;
+        int count = 0;
+        int sum = 0;
+        for(int i = 0; i<= calories.size()-k;i++){
+            if(i>0){
+                sum-=calories[i-1];
+                sum+=calories[i+k-1];
+            }
+            else{
+                for(int j = i;j<i+k; j++){
+                sum += calories[j];
+                }
+            }
+            
+            if(sum>upper) res+=1;
+            else if(sum<lower) res-=1;
+    
+            
+        }
+        return res;
+    }
+};
+
+```
+
+### [N-ary Tree Level Order Traversal - LeetCode](https://leetcode.com/problems/n-ary-tree-level-order-traversal/submissions/)
+
+```c++
+/*
+// Definition for a Node.
+class Node {
+public:
+    int val;
+    vector<Node*> children;
+
+    Node() {}
+
+    Node(int _val, vector<Node*> _children) {
+        val = _val;
+        children = _children;
+    }
+};
+*/
+class Solution {
+public:
+    vector<vector<int>> levelOrder(Node* root) {
+        std::queue<Node*> myqueue;
+        vector<vector<int>> res;
+        if (!root) return res;
+        myqueue.push(root);
+        while(!myqueue.empty()){
+            int size = myqueue.size();
+            vector<int> cur_level;
+            for(int i =0;i<size;i++){
+                Node* cur = myqueue.front();
+                myqueue.pop();
+                cur_level.push_back(cur->val);
+                for(auto item : cur->children){
+                    myqueue.push(item);
+                }
+            }
+            res.push_back(cur_level);
+        }
+        return res;
+        
+    }
+};
+```
+
+### [Evaluate Division - LeetCode](https://leetcode.com/problems/evaluate-division/submissions/)
+学一波BFS的写法
+```c++
+class Solution {
+    unordered_map<string , unordered_map<string, double>> adj_list;
+    void construct_adj_list(vector<vector<string>>& equations, vector<double>& values){
+        
+        for(int i =0;i<equations.size();i++){
+            string op1 = equations[i][0];
+            string op2 = equations[i][1];
+            double val = values[i];
+            adj_list[op1][op2] = val;
+            adj_list[op2][op1] = 1/val;
+        }
+    }
+    double BFS(string start, string end){
+        queue<pair<string, double>> q;
+        unordered_set<string> visited;
+        q.push(make_pair(start,1));
+        visited.insert(start);
+    
+        while(!q.empty()){
+            auto p = q.front();
+            q.pop();
+            string node = p.first;
+            double dist = p.second;
+            if(adj_list.find(node)==adj_list.end()) return -1;
+            if(node == end){
+                // adj_list[start][end] = dist;
+                // adj_list[end][start] = 1/dist;
+                return dist;
+            }
+            for(auto i = adj_list[node].begin();i!=adj_list[node].end();i++){
+                string next = i->first;
+                double weight = i->second;
+                if(visited.find(next)==visited.end()){
+                    visited.insert(next);
+                    q.push(make_pair(next, dist*weight));
+                }
+            }
+        }
+        return -1;
+    }
+public:
+    vector<double> calcEquation(vector<vector<string>>& equations, vector<double>& values, vector<vector<string>>& queries) {
+        vector<double> res;
+       construct_adj_list(equations,values);
+        for(auto i : queries){
+            string op1 = i[0];
+            string op2 = i[1];
+            res.push_back({BFS(op1,op2)});
+        }
+        return res;
+        
+    }
+};
+```
+
+### [Longest Palindromic Substring - LeetCode](https://leetcode.com/problems/longest-palindromic-substring/submissions/)
+我爱DP
+```c++
+class Solution {
+public:
+    string longestPalindrome(string s) {
+        int len = s.size();
+        if(len<=1) return s;
+        int left=0,right=0;
+        vector<vector<int>> dp(len, vector<int>(len,0));
+        for(int i=0;i<len;i++){
+            dp[i][i]=1;
+            if(i<len-1&&s[i]==s[i+1]){
+                    dp[i][i+1]= 1;
+                    left=i;
+                    right=i+1;
+            }
+                
+        }
+        for(int i=len-3;i>=0;i--){
+            for(int j =i+2;j<len;j++){
+                if(dp[i+1][j-1]&&s[i]==s[j]){
+                    dp[i][j]= 1;
+                    if(j-i>right-left) {
+                        left = i;
+                        right = j;
+                    }
+                }
+            }
+        }
+        return s.substr(left,right-left+1);
+    }
+};
+```
+### [Maximum Distance in Arrays - LeetCode](https://leetcode.com/problems/maximum-distance-in-arrays/submissions/)
+```c++
+class Solution {
+public:
+    int maxDistance(vector<vector<int>>& arrays) {
+        int len = arrays.size();
+        int res = INT_MIN;
+        int min_val = arrays[0][0];
+        int max_val = arrays[0][arrays[0].size()-1];
+        for(int i=1;i<len;i++){
+            
+            int temp0=abs(max_val-arrays[i][0]);
+            int temp1=abs(arrays[i][arrays[i].size()-1]-min_val);
+            res = max(res,max(temp0,temp1));
+            min_val = min(min_val,arrays[i][0]);
+            max_val = max(max_val, arrays[i][arrays[i].size()-1]);
+            
+        }
+        return res;
+    }
+};	
+```
+
+## Google 
+
+### [Longest Absolute File Path - LeetCode](https://leetcode.com/problems/longest-absolute-file-path/)
+
+```c++
+class Solution {
+public:
+
+    int lengthLongestPath(string input) {
+        input+='\n';
+        unordered_map<int,int> levels;
+        levels[-1] = 0;
+        int cur_level =0 , cur_length = 0, max_length = 0, is_file = 0;
+        
+        for(int i =0;i<input.size(); i++){
+            switch(input[i]){
+                case '\n': 
+                    if (is_file) {
+                        max_length = max(max_length,cur_length+levels[cur_level-1]);
+                        
+                    }
+                    else{
+                        levels[cur_level] = cur_length+levels[cur_level-1]+1; // +1 for slash /
+                        
+                    }
+                    cur_level = 0;
+                    cur_length = 0;
+                    is_file = 0;
+                    break;
+                case '\t':
+                    
+                    cur_level++;
+                    break;
+                case '.':
+                    is_file = 1;
+                    cur_length++;
+                    cout<<max_length<<endl;
+                    break;
+                default:
+                    cur_length++;
+            }
+        }
+        
+        
+        return max_length;
+    }
+};
+```
+
+### [Missing Ranges - LeetCode](https://leetcode.com/problems/missing-ranges/)
+```c++
+class Solution {
+public:
+    vector<string> findMissingRanges(vector<int>& nums, int lower, int upper) {
+        vector<long int> long_nums;
+        long int long_lower = lower, long_upper = upper;
+        for(auto i : nums) long_nums.push_back(i);
+        vector<vector<int>> res;
+        vector<string> final_res;
+        
+        if (nums.size()==0) {
+            if(long_upper == long_lower) {
+                cout<<long_upper<<endl;
+                return {to_string(long_upper)};
+            }
+            else return {to_string(long_lower)+"->"+to_string(long_upper)};
+        }
+
+        
+        long_nums.push_back(long_lower-1);
+        long_nums.push_back(long_upper+1);
+
+        sort(long_nums.begin(),long_nums.end());
+        
+        for(int i=0;i < long_nums.size()-1;i++){
+            if(long_nums[i+1]-long_nums[i]<=1) continue;
+            else {
+                string temp;
+                long int begin = long_nums[i]+1;
+                long int end = long_nums[i+1]-1;
+                if(begin==end){
+                    temp = to_string(end);
+
+                }else{
+                    temp = to_string(begin)+"->"+to_string(end);
+                }
+                final_res.push_back(temp);
+            }
+        }
+
+        return final_res;
+    }
+};
+```
+
+### [K Empty Slots - LeetCode](https://leetcode.com/problems/k-empty-slots/submissions/)
+```c++
+#include<cmath>
+class Solution {
+public:
+//     exceed time limits
+//     int kEmptySlots(vector<int>& bulbs, int K) {
+//         vector<int> days(bulbs.size(),0);
+        
+//         for(int i =0; i<days.size();i++){
+//             days[bulbs[i]-1]=1;
+//             int count=0;
+//             int begin = 0;
+//             int end = 0;
+//             for(int j = 0; j < days.size();){
+//                 if(days[j]==1 ) {
+//                     int k;
+//                     for(k =j+1; k<days.size();k++){
+//                         if(days[k]==1) {
+//                             count = k-j-1;
+//                             if(count == K) return i+1;
+                            
+//                             break;
+//                         }
+//                     }
+//                     j = k;
+                    
+//                 }
+//                 else j++;
+                
+                
+//             }
+            
+//         }
+//         return -1;
+//     }
+    
+     int kEmptySlots(vector<int>& bulbs, int K) {
+         vector<int> days(bulbs.size(),0);
+         for(int i =0;i<bulbs.size();i++){
+            days[bulbs[i]-1] = i + 1; // bulbs[i]-1 will turn on at day i+1;
+         }
+         int res = INT_MAX;
+         int left=0,right=K+1;
+         for(int i = left+1; right<days.size(); i++){
+             if(days[i]==days[right]){//find such day
+                 res = min(res,max(days[left],days[right]));
+                 left = i ;
+                 right = left+K+1;
+            
+             }else if(days[i]<days[left] || days[i]<days[right]){//not what we want
+                 left = i;
+                 right = left+K+1; 
+             }
+         }
+        
+         return res < INT_MAX?res:-1;
+    }
+};
+```
+
+
+### [Minimum Domino Rotations For Equal Row - LeetCode](https://leetcode.com/problems/minimum-domino-rotations-for-equal-row/submissions/)
+```c++
+class Solution {
+public:
+    int check(int val,vector<int> A, vector<int> B){
+        int cnt_a = 0;
+        int cnt_b = 0;
+        for(int i=0; i < A.size(); i++){
+           if(A[i]!=val && B[i]!= val) return -1;
+            else  if(A[i]!=val) cnt_a ++;
+            else if(B[i]!=val) cnt_b++;
+            else continue;
+        }
+        
+        return min(cnt_a,cnt_b);
+    }
+    int minDominoRotations(vector<int>& A, vector<int>& B) {
+        if(A.size() == 1 ) return 0;
+        
+        int temp1 = check(A[0],A,B);
+        if(temp1 != -1 || A[0]==B[0]) return temp1;
+        else return check(B[0],A,B);// if both A[0] and B[0] fulfill the requirement, then according to the symmetry, check(B[0],A,B) equals to check(A[0],A,B)
+        // int temp2 = check(B[0],A,B);
+        // if(temp1==-1 && temp2==-1) return -1;
+        // if(temp1==-1) return temp2;
+        // if(temp2==-1) return temp1;
+        // return min(temp1,temp2);
+    }
+};
+```
+
+
+## Amazon
+
+### [LRU Cache - LeetCode](https://leetcode.com/problems/lru-cache)
+use only one map
+```c++
+class LRUCache {
+public:
+    list<int> lru; //MRU is at the front; LRU is at the back
+    unordered_map<int,int> cache;
+    int _capacity;
+    LRUCache(int capacity) {
+        _capacity = capacity;
+    }
+    
+    int get(int key) {
+        if(cache.count(key)) {
+            update_lru(key);
+            return cache[key];
+        }else return -1;
+    }
+    
+    void put(int key, int value) {
+        if(cache.size()==_capacity && cache.count(key)==0){// cache is full and miss
+            cache.erase(lru.back());
+            lru.pop_back();
+        }
+        cache[key] = value;
+        update_lru(key);
+        
+    }
+    void update_lru(int key){
+        auto it = find (lru.begin(), lru.end(), key);
+        if(it!=lru.end()){
+            lru.erase(it);
+        }
+        lru.push_front(key);
+    }
+};
+
+/**
+ * Your LRUCache object will be instantiated and called as such:
+ * LRUCache* obj = new LRUCache(capacity);
+ * int param_1 = obj->get(key);
+ * obj->put(key,value);
+ */
+```
+
+use only 2 maps for O(1)
+```c++
+class LRUCache {
+public:
+    list<int> lru; //MRU is at the front; LRU is at the back
+    unordered_map<int,int> cache;
+    unordered_map<int,list<int>::iterator> key_iter;
+    int _capacity;
+    LRUCache(int capacity) {
+        _capacity = capacity;
+    }
+    
+    int get(int key) {
+        if(cache.count(key)) {
+            update_lru(key);
+            return cache[key];
+        }else return -1;
+    }
+    
+    void put(int key, int value) {
+        if(cache.size()==_capacity && cache.count(key)==0){// cache is full and miss
+            cache.erase(lru.back());
+            
+            // for O(1)
+            key_iter.erase(lru.back());
+            
+            lru.pop_back();
+        }
+        
+        update_lru(key);
+        cache[key] = value;
+        
+    }
+    void update_lru(int key){
+        // auto it = find (lru.begin(), lru.end(), key);
+        // if(it!=lru.end()){
+        //     lru.erase(it);
+        // }
+        // lru.push_front(key);
+        if(key_iter.count(key)) lru.erase(key_iter[key]);
+        lru.push_front(key);
+        key_iter[key] = lru.begin();
+    }
+};
+
+/**
+ * Your LRUCache object will be instantiated and called as such:
+ * LRUCache* obj = new LRUCache(capacity);
+ * int param_1 = obj->get(key);
+ * obj->put(key,value);
+ */
+```
+
+### [Best Time to Buy and Sell Stock - LeetCode](https://leetcode.com/problems/best-time-to-buy-and-sell-stock/)
+```c++
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int res =  -1;
+        int n = prices.size();
+        if(n==0||n==1) return 0;
+        vector<int> max_price(n,-1);
+        max_price[n-1] = prices[n-1];
+        for(int i = n-2;i>=0;i--){
+            max_price[i] = max(max_price[i+1], prices[i]);
+        }
+        for(int i =0 ;i< prices.size(); i++){
+            res = max(res,max_price[i]-prices[i]);
+        }
+    
+        return res;
+    }
+    
+};
+```
+a better one:
+```c++
+int maxProfit(vector<int>& prices) {
+        int res =  0;
+        int min_price = INT_MAX;
+        for(int i =0 ;i< prices.size(); i++){
+            if(prices[i]<min_price) min_price = prices[i];
+            else if(prices[i]-min_price > res) res = prices[i]-min_price;
+        }
+    
+        return res;
+    }
+```
+
+## Random
+### [Divide Two Integers - LeetCode](https://leetcode.com/problems/divide-two-integers/)
+```c++
+class Solution {
+public:
+    int divide(int dividend, int divisor) {
+        if(dividend == INT_MIN && divisor == -1) return INT_MAX;
+        if(dividend == INT_MIN && divisor == 1) return INT_MIN;
+        if(dividend == divisor) return 1;
+        int sign = (dividend>>31)^(divisor>>31)?-1:1 ;
+        if(dividend>0) dividend=-dividend;
+        if(divisor>0) divisor=-divisor;
+        if(divisor<dividend) return 0;
+        int cnt=0;
+        while(dividend-divisor<=0){
+            int temp = divisor;
+            int temp_cnt = 1;
+            int condition = (int)((temp&0xffffffff)<<1); 
+            while(condition>dividend && condition<0){
+                temp = condition;
+                temp_cnt<<=1;
+                condition = (int)((condition&0xffffffff)<<1);
+            }
+            
+            dividend -= temp;
+            cnt += temp_cnt;
+            
+        }
+        return sign*cnt;
+         
+    }
+};
+```
+
+
+
+
+
+
