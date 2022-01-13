@@ -22,25 +22,25 @@ import java.util.HashSet;
 // @lc code=start
 class Solution {
 
-    public boolean check(char[][] board, int m, int n, String word, int index, int x, int y, int direction, Set<Integer> trace) {
+    public boolean check(char[][] board, int m, int n, String word, int index, int x, int y, int direction, int[] trace) {
         if (board[x][y] != word.charAt(index) ) {
             return false;
         }
         if (index == word.length() - 1) return true;
-        // trace.add(x*n+y);
-        if (x>=1 && direction != 1 && !trace.contains((x-1)*n+y)) {
+        trace[x*n+y] = 1;
+        if (x>=1 && direction != 1 && trace[(x-1)*n+y] != 1) {
             if (check(board, m, n, word, index+1, x-1, y, 2, trace)) return true;
         }
-        if (x< m-1 && direction != 2 && !trace.contains((x+1)*n+y)) {
+        if (x< m-1 && direction != 2 && trace[(x+1)*n+y] != 1) {
             if (check(board, m, n, word, index+1, x+1, y, 1, trace)) return true;
         }
-        if (y >= 1 && direction != 3 && !trace.contains(x*n+y-1)) {
+        if (y >= 1 && direction != 3 && trace[x*n+y-1] != 1) {
             if (check(board, m, n, word, index+1, x, y-1, 4, trace)) return true;
         }
-        if (y < n-1 && direction != 4 && !trace.contains(x*n+y+1)) {
+        if (y < n-1 && direction != 4 && trace[x*n+y+1] != 1) {
             if (check(board, m, n, word, index+1, x, y+1, 3, trace)) return true;
         }
-        // trace.remove(x*n+y);
+        trace[x*n+y] = 0;
         return false;
 
     }
@@ -50,10 +50,9 @@ class Solution {
         List<String> res = new ArrayList<>();
         for (String word : words) {
             int f = 0;
-            
+            int[] trace = new int[m*n];
             for (int i = 0; i < m; i++) {
                 for (int j = 0; j < n; j++) {
-                    Set<Integer> trace = new HashSet<>();
                     if (check(board, m, n, word, 0, i, j, 0, trace)) {
                         res.add(word);
                         f = 1;
