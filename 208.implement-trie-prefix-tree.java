@@ -60,8 +60,6 @@ class Trie {
             cur = cur.get(ch);
         }
         cur.setLeaf(true);
-
-        
     }
     public TrieNode _search(String prefix) {
         TrieNode cur = root;
